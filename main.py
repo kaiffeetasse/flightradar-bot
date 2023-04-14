@@ -131,6 +131,10 @@ def stop(update, context):
 
 
 def radius(update, context):
+    if len(update.message.text.split(" ")) == 1:
+        update.message.reply_text(f"Current radius: {user_radii_km[update.message.from_user.id]}km.")
+        return
+
     try:
         user_radii_km[update.message.from_user.id] = int(update.message.text.split(" ")[1])
         update.messag.reply_text(f"Detection radius set to {user_radii_km[update.message.from_user.id]}km.")
