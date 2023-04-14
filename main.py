@@ -7,7 +7,7 @@ import os
 import logging
 from telegram.ext import (
     Updater,
-    MessageHandler, Filters,
+    MessageHandler, Filters, CommandHandler,
 )
 
 logging.basicConfig(
@@ -30,7 +30,7 @@ def handle_location(update, context):
     # add to user_locations
     user_locations[update.message.from_user.id] = (update.message.location.latitude, update.message.location.longitude)
 
-    update.message.reply_text("Location set")
+    update.message.reply_text("Location set!")
 
 
 def get_y1_y2_x1_x2(latitude, longitude, radius_km):
@@ -113,6 +113,20 @@ def handle_message(update, context):
     update.message.reply_text("test")
 
 
+def start(update, context):
+    update.message.reply_text("Send your location to start receiving notifications about flights over your location.")
+
+
+def stop(update, context):
+    try:
+        user_locations.pop(update.message.from_user.id)
+        update.message \
+            .reply_text("Notifications stopped. Send your location again to start receiving notifications again.")
+    except KeyError:
+        update.message \
+            .reply_text("You are not receiving notifications. Send your location to start receiving notifications.")
+
+
 if __name__ == '__main__':
     thread = threading.Thread(target=check_flights_for_users_threaded)
     thread.start()
@@ -120,6 +134,10 @@ if __name__ == '__main__':
     dispatcher = updater.dispatcher
 
     dispatcher.add_handler(MessageHandler(Filters.location, handle_location))
+
+    dispatcher.add_handler(CommandHandler("start", start))
+    dispatcher.add_handler(CommandHandler("stop", stop))
+
     dispatcher.add_handler(MessageHandler(Filters.text, handle_message))
 
     updater.start_polling()
