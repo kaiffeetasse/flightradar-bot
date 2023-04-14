@@ -131,13 +131,30 @@ def stop(update, context):
 
 
 def radius(update, context):
-    if len(update.message.text.split(" ")) == 1:
-        update.message.reply_text(f"Current radius: {user_radii_km[update.message.from_user.id]}km.")
+    # check if user radii is set
+    if user_radii_km.get(update.message.from_user.id) is None:
+        update.message.reply_text("Please send your location first to set your detection radius.")
         return
 
+    # when no args are passed, return current radius
+    if len(update.message.text.split(" ")) == 1:
+        update.message.reply_text(f"Current detection radius: {user_radii_km[update.message.from_user.id]}km.")
+        return
+
+    # try to set radius
     try:
-        user_radii_km[update.message.from_user.id] = int(update.message.text.split(" ")[1])
-        update.messag.reply_text(f"Detection radius set to {user_radii_km[update.message.from_user.id]}km.")
+        new_radius = int(update.message.text.split(" ")[1])
+
+        if new_radius < 1:
+            update.message.reply_text("Radius must be at least 1km.")
+            return
+
+        if new_radius > 25:
+            update.message.reply_text("Radius must be less than 25km.")
+            return
+
+        user_radii_km[update.message.from_user.id] = new_radius
+        update.message.reply_text(f"Detection radius set to {user_radii_km[update.message.from_user.id]}km.")
     except ValueError:
         update.message.reply_text("Invalid radius. Please send a number.")
     except Exception as e:
