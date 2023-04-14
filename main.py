@@ -23,12 +23,14 @@ updater = Updater(TELEGRAM_API_TOKEN, use_context=True)
 fr_api = FlightRadar24API()
 
 user_locations = {}
-radius_km = 20
+user_radii_km = {}
+default_radius_km = 5
 
 
 def handle_location(update, context):
     # add to user_locations
     user_locations[update.message.from_user.id] = (update.message.location.latitude, update.message.location.longitude)
+    user_radii_km[update.message.from_user.id] = default_radius_km
 
     update.message.reply_text("Location set!")
 
@@ -67,7 +69,8 @@ def check_flights_for_users_threaded():
                 latitude = location[0]
                 longitude = location[1]
 
-                y1, y2, x1, x2 = get_y1_y2_x1_x2(latitude, longitude, radius_km)
+                user_radius = user_radii_km.get(user_id)
+                y1, y2, x1, x2 = get_y1_y2_x1_x2(latitude, longitude, user_radius)
 
                 new_user_flights = fr_api.get_flights(bounds=f"{y1},{y2},{x1},{x2}")
                 new_user_flight_ids = [flight.id for flight in new_user_flights]
@@ -127,6 +130,18 @@ def stop(update, context):
             .reply_text("You are not receiving notifications. Send your location to start receiving notifications.")
 
 
+def radius(update, context):
+    try:
+        user_radii_km[update.message.from_user.id] = int(update.message.text.split(" ")[1])
+        update.messag.reply_text(f"Detection radius set to {user_radii_km[update.message.from_user.id]}km.")
+    except ValueError:
+        update.message.reply_text("Invalid radius. Please send a number.")
+    except Exception as e:
+        update.message.reply_text(f"Sorry, something went wrong. Please try again.")
+        logger.error("Error setting radius: ")
+        logger.exception(e)
+
+
 if __name__ == '__main__':
     thread = threading.Thread(target=check_flights_for_users_threaded)
     thread.start()
@@ -137,6 +152,7 @@ if __name__ == '__main__':
 
     dispatcher.add_handler(CommandHandler("start", start))
     dispatcher.add_handler(CommandHandler("stop", stop))
+    dispatcher.add_handler(CommandHandler("radius", radius))
 
     dispatcher.add_handler(MessageHandler(Filters.text, handle_message))
 
