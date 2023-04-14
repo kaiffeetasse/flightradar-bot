@@ -1,0 +1,3 @@
+start - Start the bot and show usage information
+stop - Stop receiving notifications
+radius - Set the radius of the detection area
