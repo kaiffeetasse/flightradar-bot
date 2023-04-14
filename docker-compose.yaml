@@ -1,0 +1,11 @@
+version: '3.1'
+
+services:
+  flightradar-bot:
+    image: flightradar-bot:latest
+    container_name: flightradar-bot
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1024m"
