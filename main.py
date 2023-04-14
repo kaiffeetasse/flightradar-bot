@@ -184,7 +184,7 @@ if __name__ == '__main__':
     dispatcher.add_handler(CommandHandler("stop", stop))
     dispatcher.add_handler(CommandHandler("radius", radius))
 
-    dispatcher.add_handler(MessageHandler(Filters.text, handle_message))
+    # dispatcher.add_handler(MessageHandler(Filters.text, handle_message))
 
     updater.start_polling()
 
