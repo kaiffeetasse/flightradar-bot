@@ -94,6 +94,34 @@ def set_user_radius(telegram_id, radius_km):
     return mycursor.rowcount
 
 
+def set_user_altitude_min_m(telegram_id, altitude_min_m):
+    logger.info("setting user altitude min for " + str(telegram_id) + " to " + str(altitude_min_m))
+    mydb = get_db()
+    mycursor = mydb.cursor(dictionary=True, buffered=True)
+
+    sql = "UPDATE user SET altitude_min_m = %s WHERE telegram_id = %s"
+    val = (altitude_min_m, telegram_id)
+    mycursor.execute(sql, val)
+
+    mydb.commit()
+
+    return mycursor.rowcount
+
+
+def set_user_altitude_max_m(telegram_id, altitude_max_m):
+    logger.info("setting user altitude max for " + str(telegram_id) + " to " + str(altitude_max_m))
+    mydb = get_db()
+    mycursor = mydb.cursor(dictionary=True, buffered=True)
+
+    sql = "UPDATE user SET altitude_max_m = %s WHERE telegram_id = %s"
+    val = (altitude_max_m, telegram_id)
+    mycursor.execute(sql, val)
+
+    mydb.commit()
+
+    return mycursor.rowcount
+
+
 def get_users():
     mydb = get_db()
     mycursor = mydb.cursor(dictionary=True, buffered=True)
@@ -105,8 +133,8 @@ def get_users():
 
     # convert to User objects
     users = []
-    for user in result:
-        users.append(User(user.get("telegram_id"), user.get("latitude"), user.get("longitude"), user.get("radius_km")))
+    for user_result in result:
+        users.append(map_user_entity(user_result))
 
     return users
 
@@ -124,10 +152,18 @@ def get_user(telegram_id):
     if result is None:
         return None
 
-    # convert to User object
-    user = User(result.get("telegram_id"), result.get("latitude"), result.get("longitude"), result.get("radius_km"))
+    return map_user_entity(result)
 
-    return user
+
+def map_user_entity(db_result):
+    return User(
+        db_result.get("telegram_id"),
+        db_result.get("latitude"),
+        db_result.get("longitude"),
+        db_result.get("radius_km"),
+        db_result.get("altitude_min_m"),
+        db_result.get("altitude_max_m")
+    )
 
 
 if __name__ == '__main__':
