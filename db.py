@@ -51,6 +51,7 @@ def get_db():
 
 
 def remove_user(telegram_id):
+    logger.info("removing user " + str(telegram_id))
     mydb = get_db()
     mycursor = mydb.cursor(dictionary=True, buffered=True)
 
@@ -64,6 +65,8 @@ def remove_user(telegram_id):
 
 
 def set_user_location(telegram_id, latitude, longitude) -> User:
+    logger.info("setting user location for " + str(telegram_id) + " to " + str(latitude) + ", " + str(longitude))
+
     mydb = get_db()
     mycursor = mydb.cursor(dictionary=True, buffered=True)
 
@@ -78,6 +81,7 @@ def set_user_location(telegram_id, latitude, longitude) -> User:
 
 
 def set_user_radius(telegram_id, radius_km):
+    logger.info("setting user radius for " + str(telegram_id) + " to " + str(radius_km))
     mydb = get_db()
     mycursor = mydb.cursor(dictionary=True, buffered=True)
 
