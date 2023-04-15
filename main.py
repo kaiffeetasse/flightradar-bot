@@ -10,6 +10,7 @@ from telegram.ext import (
     MessageHandler, Filters, CommandHandler,
 )
 import db
+from staticmap import StaticMap, CircleMarker
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
@@ -26,6 +27,19 @@ fr_api = FlightRadar24API()
 default_radius_km = 5
 
 
+def create_map(latitude, longitude, radius_km):
+    y1, y2, x1, x2 = get_y1_y2_x1_x2(latitude, longitude, radius_km)
+
+    width = 300
+
+    m = StaticMap(width, width)
+    m.add_marker(CircleMarker((x1, y1), None, 1))
+    m.add_marker(CircleMarker((x2, y2), None, 1))
+
+    image = m.render()
+    image.save('map.png')
+
+
 def set_location(update, context):
     user_id = update.message.from_user.id
     latitude = update.message.location.latitude
@@ -33,7 +47,9 @@ def set_location(update, context):
 
     db.set_user_location(user_id, latitude, longitude)
 
-    update.message.reply_text("Location set!")
+    create_map(latitude, longitude, default_radius_km)
+
+    update.message.reply_photo(open('map.png', 'rb'), caption="Location set!")
 
 
 def get_y1_y2_x1_x2(latitude, longitude, radius_km):
@@ -161,8 +177,10 @@ def radius(update, context):
             update.message.reply_text("Radius must be less than 25km.")
             return
 
+        create_map(user.latitude, user.longitude, new_radius)
+
         db.set_user_radius(user_id, new_radius)
-        update.message.reply_text(f"Detection radius set to {new_radius}km.")
+        update.message.reply_photo(open("map.png", "rb"), caption=f"Detection radius set to {new_radius}km.")
 
     except ValueError:
         update.message.reply_text("Invalid radius. Please send a number.")
