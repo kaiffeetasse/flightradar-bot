@@ -45,6 +45,8 @@ def check_flights_for_users_threaded():
                 latitude = user.latitude
                 longitude = user.longitude
                 user_radius = user.radius_km
+                altitude_min_m = user.altitude_min_m
+                altitude_max_m = user.altitude_max_m
 
                 if user_flights.get(user_id) is None:
                     user_flights[user_id] = []
@@ -62,8 +64,12 @@ def check_flights_for_users_threaded():
                     logger.debug(f"Checking flight {flight.id} for user {user_id}")
 
                     if flight.id not in user_flight_ids.get(user_id):
+
                         altitude_ft = flight.altitude
                         altitude_m = int(altitude_ft * 0.3048)
+
+                        if altitude_m < altitude_min_m or altitude_m > altitude_max_m:
+                            continue
 
                         speed_kt = flight.ground_speed
                         speed_kmh = int(speed_kt * 1.852)
