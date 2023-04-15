@@ -1,7 +1,7 @@
 # Flight Radar Bot
 
 This is a Telegram bot that uses the FlightRadar24 API to track flights in a given area and notify users when a new
-flight appears in their area of interest.
+flight appears in their area of interest. You can use this bot by adding [@flights_24_bot](https://t.me/flights_24_bot) to your Telegram chat or host it yourself.
 
 ## Features
 
