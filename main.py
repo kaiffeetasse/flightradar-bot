@@ -136,17 +136,22 @@ def handle_message(update, context):
 
 
 def start(update, context):
-    update.message.reply_text("Send your location to start receiving notifications about flights over your location.")
+    if db.get_user(update.message.from_user.id) is None:
+        update.message \
+            .reply_text("Send your location to start receiving notifications about flights over your location.")
+    else:
+        update.message \
+            .reply_text("You are already receiving notifications. Send /stop to stop receiving notifications.")
 
 
 def stop(update, context):
-    try:
+    if db.get_user(update.message.from_user.id) is None:
+        update.message \
+            .reply_text("You are not receiving notifications. Send your location to start receiving notifications.")
+    else:
         db.remove_user(update.message.from_user.id)
         update.message \
             .reply_text("Notifications stopped. Send your location again to start receiving notifications again.")
-    except KeyError:
-        update.message \
-            .reply_text("You are not receiving notifications. Send your location to start receiving notifications.")
 
 
 def radius(update, context):
