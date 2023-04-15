@@ -63,7 +63,7 @@ def remove_user(telegram_id):
     return mycursor.rowcount
 
 
-def set_user_location(telegram_id, latitude, longitude):
+def set_user_location(telegram_id, latitude, longitude) -> User:
     mydb = get_db()
     mycursor = mydb.cursor(dictionary=True, buffered=True)
 
@@ -74,7 +74,7 @@ def set_user_location(telegram_id, latitude, longitude):
 
     mydb.commit()
 
-    return mycursor.rowcount
+    return get_user(telegram_id)
 
 
 def set_user_radius(telegram_id, radius_km):

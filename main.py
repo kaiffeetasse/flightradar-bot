@@ -45,11 +45,12 @@ def set_location(update, context):
     latitude = update.message.location.latitude
     longitude = update.message.location.longitude
 
-    db.set_user_location(user_id, latitude, longitude)
+    user = db.set_user_location(user_id, latitude, longitude)
+    user_radius_km = user.radius_km
 
-    create_map(latitude, longitude, default_radius_km)
+    create_map(latitude, longitude, user_radius_km)
 
-    update.message.reply_photo(open('map.png', 'rb'), caption="Location set!")
+    update.message.reply_photo(open('map.png', 'rb'), caption="Location set! Radius: " + str(user_radius_km) + "km")
 
 
 def get_y1_y2_x1_x2(latitude, longitude, radius_km):
@@ -161,13 +162,17 @@ def radius(update, context):
     # when no args are passed, return current radius
     if len(update.message.text.split(" ")) == 1:
         user_radius = user.radius_km
-        update.message \
-            .reply_text(f"Current detection radius: {user_radius}km. You can change it with /radius <radius>.")
+        create_map(user.latitude, user.longitude, user_radius)
+
+        update.message.reply_photo(
+            open('map.png', 'rb'),
+            caption=f"Current detection radius: {user_radius}km.\nYou can change it with /radius <radius>."
+        )
         return
 
     # try to set radius
     try:
-        new_radius = int(update.message.text.split(" ")[1])
+        new_radius = int(update.message.text.split(" ")[1].replace("km", ""))
 
         if new_radius < 1:
             update.message.reply_text("Radius must be at least 1km.")
