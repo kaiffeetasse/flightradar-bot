@@ -9,6 +9,7 @@ from telegram.ext import (
     MessageHandler, Filters, CommandHandler,
 )
 import db
+import flightradar24_api
 from commands import (
     altitude, altmax, altmin, location, radius, start, stop
 )
@@ -27,8 +28,11 @@ updater = Updater(TELEGRAM_API_TOKEN, use_context=True)
 fr_api = FlightRadar24API()
 
 
-def send_message_to_user(user_id, message):
-    updater.bot.send_message(user_id, message)
+def send_message_to_user(user_id, message, image_src):
+    if image_src is None:
+        updater.bot.send_message(user_id, message)
+    else:
+        updater.bot.send_photo(user_id, image_src, caption=message)
 
 
 def check_flights_for_users_threaded():
@@ -82,7 +86,9 @@ def check_flights_for_users_threaded():
                         msg = msg + f"To: {flight.destination_airport_iata}\n"
                         msg = msg + f"Link: https://www.flightradar24.com/{flight.callsign}/{flight.id}"
 
-                        send_message_to_user(user_id, msg)
+                        image_src = flightradar24_api.get_image_by_flight_id(flight.id)
+
+                        send_message_to_user(user_id, msg, image_src)
 
                         if user_flight_ids.get(user_id) is None:
                             user_flight_ids[user_id] = []
