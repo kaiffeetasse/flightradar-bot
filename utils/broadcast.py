@@ -6,8 +6,6 @@ TELEGRAM_API_TOKEN = os.environ.get("TELEGRAM_API_TOKEN")
 updater = Updater(TELEGRAM_API_TOKEN, use_context=True)
 TEST_MODE = True
 
-# this
-
 
 def escape_text(text):
     return text \
@@ -17,6 +15,8 @@ def escape_text(text):
         .replace("|", "\|") \
         .replace("`", "\`") \
         .replace("=", "\=") \
+        .replace("(", "\(") \
+        .replace(")", "\)") \
         .replace("!", "\!")
 
 
@@ -29,7 +29,7 @@ for user in users:
         continue
 
     msg = "*Update 2023-04-18*\n\n"
-    msg = msg + "🖼️ Aircraft images"
+    msg = msg + "🖼️ Aircraft images\n"
     msg = msg + "📌 Track aircrafts (Beta)"
 
     updater.bot.send_message(telegram_id, escape_text(msg), parse_mode="MarkdownV2")
