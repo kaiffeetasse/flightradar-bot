@@ -191,7 +191,7 @@ def check_tracked_flights_for_users_threaded():
                     if new_flight_status == flight_status:
                         continue
 
-                    msg = "✈ Tracked flight ✈\n\n"
+                    msg = "✈ Tracked flight Update ✈\n\n"
                     msg = msg + f"Aircraft: {aircraft_registration}\n"
                     msg = msg + f"New status: {new_aircraft_states.get(aircraft_registration)}\n"
 
