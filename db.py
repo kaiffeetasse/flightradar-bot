@@ -166,6 +166,75 @@ def map_user_entity(db_result):
     )
 
 
+def get_tracked_aircraft_registrations_by_telegram_id(telegram_id):
+    mydb = get_db()
+    mycursor = mydb.cursor(dictionary=True, buffered=True)
+
+    sql = "SELECT aircraft_registration FROM tracking WHERE user_telegram_id = %s"
+    val = (telegram_id,)
+    mycursor.execute(sql, val)
+
+    result = mycursor.fetchall()
+
+    return result
+
+
+def track_aircraft(telegram_id, registration):
+    logger.info("tracking aircraft for " + str(telegram_id) + " with registration " + str(registration))
+
+    mydb = get_db()
+    mycursor = mydb.cursor(dictionary=True, buffered=True)
+
+    tracked_aircrafts = get_tracked_aircraft_registrations_by_telegram_id(telegram_id)
+
+    if registration not in tracked_aircrafts:
+        # add tracking
+        sql = "INSERT INTO tracking (user_telegram_id, aircraft_registration) VALUES (%s, %s)"
+        logger.info("tracking aircraft with registration " + str(registration) + " for user " + str(telegram_id))
+    else:
+        logger.warning("aircraft with registration " + str(registration)
+                       + " is already tracked for user " + str(telegram_id))
+        return
+
+    val = (telegram_id, registration)
+    mycursor.execute(sql, val)
+
+    mydb.commit()
+
+    return mycursor.rowcount
+
+
+def untrack_aircraft(telegram_id, registration):
+    logger.info("untracking aircraft for " + str(telegram_id) + " with registration " + str(registration))
+
+    mydb = get_db()
+    mycursor = mydb.cursor(dictionary=True, buffered=True)
+
+    sql = "DELETE FROM tracking WHERE user_telegram_id = %s AND aircraft_registration = %s"
+    val = (telegram_id, registration)
+    mycursor.execute(sql, val)
+
+    mydb.commit()
+
+    return mycursor.rowcount
+
+
+def is_aircraft_tracked(user_id, registration):
+    mydb = get_db()
+    mycursor = mydb.cursor(dictionary=True, buffered=True)
+
+    sql = "SELECT * FROM tracking WHERE user_telegram_id = %s AND aircraft_registration = %s"
+    val = (user_id, registration)
+    mycursor.execute(sql, val)
+
+    result = mycursor.fetchone()
+
+    if result is None:
+        return False
+
+    return True
+
+
 if __name__ == '__main__':
     # set_user_location(123, 1.23456789, 9.87654321)
 
