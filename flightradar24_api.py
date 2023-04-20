@@ -1,3 +1,5 @@
+import sys
+
 import requests
 import logging
 
@@ -48,5 +50,49 @@ def get_image_by_registration_number(registration_number):
     return cdn_full_url
 
 
+def __get_distance(lat1, lon1, lat2, lon2):
+    from math import sin, cos, sqrt, atan2, radians
+    # Approximate radius of earth in km
+    R = 6373.0
+
+    lat1 = radians(lat1)
+    lon1 = radians(lon1)
+    lat2 = radians(lat2)
+    lon2 = radians(lon2)
+
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+
+    a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+    distance = R * c
+    return distance
+
+
+def get_airport_by_lat_long(latitude, longitude):
+    from FlightRadar24.api import FlightRadar24API
+    fr_api = FlightRadar24API()
+    airports = fr_api.get_airports()
+
+    most_nearby_airport = None
+    most_nearby_airport_distance_km = sys.maxsize
+
+    for airport in airports:
+        airport_latitude = airport["lat"]
+        airport_longitude = airport["lon"]
+
+        airport_distance = __get_distance(latitude, longitude, airport_latitude, airport_longitude)
+
+        if airport_distance < most_nearby_airport_distance_km:
+            most_nearby_airport = airport
+            most_nearby_airport_distance_km = airport_distance
+
+    return most_nearby_airport, most_nearby_airport_distance_km
+
+
 if __name__ == '__main__':
-    get_image_by_registration_number("HB-ZRQ")
+    # get_image_by_registration_number("HB-ZRQ")
+    airport, distance = get_airport_by_lat_long(48.406355, 7.949271)
+    print("nearby: " + str(airport))
+    print("distance: " + str(distance) + "km")

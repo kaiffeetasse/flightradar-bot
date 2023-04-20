@@ -191,10 +191,28 @@ def check_tracked_flights_for_users_threaded():
                     if new_flight_status == flight_status:
                         continue
 
+                    aircraft = new_aircraft_states.get(aircraft_registration)
+
+                    latitude = aircraft.latitude
+                    longitude = aircraft.longitude
+
+                    most_nearby_airport, most_nearby_airport_distance_km = flightradar24_api \
+                        .get_airport_by_lat_long(latitude, longitude)
+
+                    # probably a faulty status update
+                    if most_nearby_airport_distance_km > 3:
+                        continue
+
+                    if new_aircraft_states.get(aircraft_registration) is None:
+                        status_msg = "Gelandet"
+                    else:
+                        status_msg = "Gestartet"
+
+                    status_msg = status_msg + " (" + most_nearby_airport['name'] + ")"
+
                     msg = "✈ Tracked flight Update ✈\n\n"
-                    msg = msg + f"Aircraft: {aircraft_registration}\n"
-                    msg = msg + f"Old status: {aircraft_states.get(aircraft_registration)}\n"
-                    msg = msg + f"New status: {new_aircraft_states.get(aircraft_registration)}\n"
+                    msg = msg + f"Aircraft: {aircraft.registration}\n"
+                    msg = msg + f"Status: {status_msg}"
 
                     image_url = flightradar24_api.get_image_by_registration_number(aircraft_registration)
 
