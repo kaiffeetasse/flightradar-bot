@@ -204,9 +204,9 @@ def check_tracked_flights_for_users_threaded():
                         continue
 
                     if new_aircraft_states.get(aircraft_registration) is None:
-                        status_msg = "Gelandet"
+                        status_msg = "Landed"
                     else:
-                        status_msg = "Gestartet"
+                        status_msg = "Started"
 
                     status_msg = status_msg + " (" + most_nearby_airport['name'] + ")"
 
