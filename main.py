@@ -193,8 +193,16 @@ def check_tracked_flights_for_users_threaded():
 
                     aircraft = new_aircraft_states.get(aircraft_registration)
 
-                    latitude = aircraft.latitude
-                    longitude = aircraft.longitude
+                    if aircraft is None:
+                        status_msg = "Landed"
+
+                        latitude = aircraft_states.get(aircraft_registration).latitude
+                        longitude = aircraft_states.get(aircraft_registration).longitude
+                    else:
+                        status_msg = "Started"
+
+                        latitude = aircraft.latitude
+                        longitude = aircraft.longitude
 
                     most_nearby_airport, most_nearby_airport_distance_km = flightradar24_api \
                         .get_airport_by_lat_long(latitude, longitude)
@@ -202,11 +210,6 @@ def check_tracked_flights_for_users_threaded():
                     # probably a faulty status update
                     if most_nearby_airport_distance_km > 3:
                         continue
-
-                    if new_aircraft_states.get(aircraft_registration) is None:
-                        status_msg = "Landed"
-                    else:
-                        status_msg = "Started"
 
                     status_msg = status_msg + " (" + most_nearby_airport['name'] + ")"
 
