@@ -193,9 +193,12 @@ def check_tracked_flights_for_users_threaded():
 
                     msg = "✈ Tracked flight Update ✈\n\n"
                     msg = msg + f"Aircraft: {aircraft_registration}\n"
+                    msg = msg + f"Old status: {aircraft_states.get(aircraft_registration)}\n"
                     msg = msg + f"New status: {new_aircraft_states.get(aircraft_registration)}\n"
 
-                    send_message_to_user(user_id, msg, None, aircraft_registration, True)
+                    image_url = flightradar24_api.get_image_by_registration_number(aircraft_registration)
+
+                    send_message_to_user(user_id, msg, image_url, aircraft_registration, True)
                     time.sleep(1)
 
             aircraft_states = new_aircraft_states

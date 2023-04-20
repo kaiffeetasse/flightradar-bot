@@ -1,5 +1,4 @@
 import requests
-from FlightRadar24.api import FlightRadar24API
 import logging
 
 logging.basicConfig(
@@ -37,16 +36,17 @@ def get_image_by_flight_id(flight_id):
     return None
 
 
-if __name__ == '__main__':
-    # flight_infos = get_flight_infos("2ff0fd74")
-    #
-    # if "images" in flight_infos["aircraft"] and flight_infos["aircraft"]["images"] is not None:
-    #     images = flight_infos["aircraft"]["images"]
-    #
-    #     if "large" in images:
-    #         image_src = images["large"][0]["src"]
-    #         print(image_src)
+def get_image_by_registration_number(registration_number):
+    url = "https://www.jetphotos.com/api/json/quicksearch.php?term=" + registration_number
 
-    fr_api = FlightRadar24API()
-    info = fr_api.get_flights(registration="N363UP")
-    print(info)
+    response = requests.request("GET", url)
+
+    res_json = response.json()
+
+    cdn_full_url = "https://cdn.jetphotos.com/full/" + res_json[0]["filename"]
+
+    return cdn_full_url
+
+
+if __name__ == '__main__':
+    get_image_by_registration_number("HB-ZRQ")
