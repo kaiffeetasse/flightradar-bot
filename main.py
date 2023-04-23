@@ -1,10 +1,8 @@
 import threading
-import time
 from FlightRadar24.api import FlightRadar24API
 from dotenv import load_dotenv
 import os
 import logging
-
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.error import Unauthorized
 from telegram.ext import (
@@ -12,11 +10,10 @@ from telegram.ext import (
     MessageHandler, Filters, CommandHandler, CallbackQueryHandler,
 )
 import db
-import flightradar24_api
 from commands import (
     altitude, altmax, altmin, location, radius, start, stop
 )
-from utils import map
+from schedules import tracked_flights, location_flights
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
@@ -83,186 +80,16 @@ def track_callback(update, context):
     )
 
 
-def check_flights_for_users_threaded():
-    user_flights = {}
-    user_flight_ids = {}
-
-    while True:
-
-        try:
-
-            for user in db.get_users():
-
-                user_id = user.telegram_id
-                latitude = user.latitude
-                longitude = user.longitude
-                user_radius = user.radius_km
-                altitude_min_m = user.altitude_min_m
-                altitude_max_m = user.altitude_max_m
-
-                if user_flights.get(user_id) is None:
-                    user_flights[user_id] = []
-                    user_flight_ids[user_id] = []
-
-                logger.debug(f"Checking for user {user_id} at {latitude}, {longitude}")
-
-                y1, y2, x1, x2 = map.get_y1_y2_x1_x2(latitude, longitude, user_radius)
-
-                new_user_flights = fr_api.get_flights(bounds=f"{y1},{y2},{x1},{x2}")
-                new_user_flight_ids = [flight.id for flight in new_user_flights]
-
-                for flight in new_user_flights:
-
-                    logger.debug(f"Checking flight {flight.id} for user {user_id}")
-
-                    if flight.id not in user_flight_ids.get(user_id):
-
-                        altitude_ft = flight.altitude
-                        altitude_m = int(altitude_ft * 0.3048)
-
-                        if altitude_m < altitude_min_m or altitude_m > altitude_max_m:
-                            continue
-
-                        speed_kt = flight.ground_speed
-                        speed_kmh = int(speed_kt * 1.852)
-
-                        msg = "✈ New flight over your location ✈\n\n"
-                        msg = msg + f"Aircraft: {flight.callsign} ({flight.aircraft_code})\n"
-                        msg = msg + f"Altitude: {altitude_m}m\n"
-                        msg = msg + f"Speed: {speed_kmh}km/h\n"
-                        msg = msg + f"From: {flight.origin_airport_iata}\n"
-                        msg = msg + f"To: {flight.destination_airport_iata}\n"
-                        msg = msg + f"Link: https://www.flightradar24.com/{flight.callsign}/{flight.id}"
-
-                        image_src = flightradar24_api.get_image_by_flight_id(flight.id)
-                        registration = flight.registration
-
-                        tracking = db.is_aircraft_tracked(user_id, registration)
-
-                        send_message_to_user(user_id, msg, image_src, registration, tracking)
-                        time.sleep(1)
-
-                        if user_flight_ids.get(user_id) is None:
-                            user_flight_ids[user_id] = []
-
-                        user_flight_ids[user_id].append(flight.id)
-
-                for flight_id in user_flight_ids.get(user_id):
-                    if flight_id not in new_user_flight_ids:
-                        user_flight_ids[user_id].remove(flight_id)
-
-        except Exception as e:
-            logger.error("Error while checking for flights: " + str(e))
-            logger.exception(e)
-
-        time.sleep(5)
-
-
-def get_aircraft_states_for_all_users():
-    aircraft_status = {}
-
-    for user in db.get_users():
-        user_id = user.telegram_id
-        tracked_aircrafts = db.get_tracked_aircraft_registrations_by_telegram_id(user_id)
-
-        for aircraft in tracked_aircrafts:
-
-            flights = fr_api.get_flights(registration=aircraft["aircraft_registration"])
-
-            if flights is None or len(flights) == 0:
-                aircraft_status[aircraft["aircraft_registration"]] = None
-                continue
-            else:
-                aircraft_status[aircraft["aircraft_registration"]] = flights[0]
-
-    return aircraft_status
-
-
-def check_tracked_flights_for_users_threaded():
-    aircraft_states = get_aircraft_states_for_all_users()
-
-    while True:
-
-        try:
-
-            new_aircraft_states = get_aircraft_states_for_all_users()
-
-            for user in db.get_users():
-
-                user_id = user.telegram_id
-                tracked_aircrafts = db.get_tracked_aircraft_registrations_by_telegram_id(user_id)
-
-                for aircraft in tracked_aircrafts:
-
-                    aircraft_registration = aircraft["aircraft_registration"]
-
-                    new_flight_status = new_aircraft_states.get(aircraft_registration) is None
-                    flight_status = aircraft_states.get(aircraft_registration) is None
-
-                    if new_flight_status == flight_status:
-                        continue
-
-                    aircraft = new_aircraft_states.get(aircraft_registration)
-
-                    if aircraft is None:
-                        status_msg = "Landed"
-
-                        latitude = aircraft_states.get(aircraft_registration).latitude
-                        longitude = aircraft_states.get(aircraft_registration).longitude
-                    else:
-                        status_msg = "Started"
-
-                        latitude = aircraft.latitude
-                        longitude = aircraft.longitude
-
-                    most_nearby_airport, most_nearby_airport_distance_km = flightradar24_api \
-                        .get_airport_by_lat_long(latitude, longitude)
-
-                    # probably a faulty status update
-                    if most_nearby_airport_distance_km > 3:
-                        continue
-
-                    # skip aircrafts on ground
-                    if aircraft is not None and aircraft.ground_speed > 30:
-                        continue
-
-                    status_msg = status_msg + " (" + most_nearby_airport['name'] + ")"
-
-                    msg = "✈ Tracked flight Update ✈\n\n"
-                    msg = msg + f"Aircraft: {aircraft_registration}\n"
-                    msg = msg + f"Status: {status_msg}"
-
-                    if aircraft.callsign is not None and aircraft.id is not None:
-                        msg = msg + f"\nLink: https://www.flightradar24.com/{aircraft.callsign}/{aircraft.id}"
-
-                    image_url = flightradar24_api.get_image_by_registration_number(aircraft_registration)
-
-                    send_message_to_user(user_id, msg, image_url, aircraft_registration, True)
-
-                    # update aircraft state
-                    aircraft_states[aircraft_registration] = aircraft
-
-                    time.sleep(1)
-
-            # aircraft_states = new_aircraft_states
-
-        except Exception as e:
-            logger.error("Error while checking for tracked flights: " + str(e))
-            logger.exception(e)
-
-        time.sleep(30)
-
-
 def handle_message(update, context):
     print(update.message.text)
     update.message.reply_text("test")
 
 
 if __name__ == '__main__':
-    thread1 = threading.Thread(target=check_flights_for_users_threaded)
+    thread1 = threading.Thread(target=location_flights.check_flights_for_users_threaded)
     thread1.start()
 
-    thread2 = threading.Thread(target=check_tracked_flights_for_users_threaded)
+    thread2 = threading.Thread(target=tracked_flights.check_tracked_flights_for_users_threaded)
     thread2.start()
 
     dispatcher = updater.dispatcher
