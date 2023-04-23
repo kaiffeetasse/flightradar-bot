@@ -211,6 +211,10 @@ def check_tracked_flights_for_users_threaded():
                     if most_nearby_airport_distance_km > 3:
                         continue
 
+                    # skip aircrafts on ground
+                    if aircraft is not None and aircraft.ground_speed > 30:
+                        continue
+
                     status_msg = status_msg + " (" + most_nearby_airport['name'] + ")"
 
                     msg = "✈ Tracked flight Update ✈\n\n"
