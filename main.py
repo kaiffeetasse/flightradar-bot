@@ -6,6 +6,7 @@ import os
 import logging
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.error import Unauthorized
 from telegram.ext import (
     Updater,
     MessageHandler, Filters, CommandHandler, CallbackQueryHandler,
@@ -33,10 +34,20 @@ fr_api = FlightRadar24API()
 def send_message_to_user(user_id, message, image_src, registration, tracking):
     track_button = get_track_button(registration, tracking)
 
-    if image_src is None:
-        updater.bot.send_message(user_id, message, reply_markup=track_button)
-    else:
-        updater.bot.send_photo(user_id, image_src, caption=message, reply_markup=track_button)
+    try:
+
+        if image_src is None:
+            updater.bot.send_message(user_id, message, reply_markup=track_button)
+        else:
+            updater.bot.send_photo(user_id, image_src, caption=message, reply_markup=track_button)
+    except Unauthorized:
+        # user has blocked the bot
+        logger.error("could not send message to user " + str(user_id) + " (user has blocked the bot)")
+        db.remove_user(user_id)
+        db.remove_all_tracked_aiplanes(user_id)
+    except Exception as e:
+        logger.error("could not send message to user " + str(user_id))
+        logger.exception(e)
 
 
 def get_track_button(aircraft_registration, untrack=False):

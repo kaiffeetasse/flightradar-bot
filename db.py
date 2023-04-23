@@ -64,6 +64,20 @@ def remove_user(telegram_id):
     return mycursor.rowcount
 
 
+def remove_all_tracked_aiplanes(telgram_id):
+    logger.info("removing all tracked airplanes for user " + str(telgram_id))
+    mydb = get_db()
+    mycursor = mydb.cursor(dictionary=True, buffered=True)
+
+    sql = "DELETE FROM tracked_airplane WHERE telegram_id = %s"
+    val = (telgram_id,)
+    mycursor.execute(sql, val)
+
+    mydb.commit()
+
+    return mycursor.rowcount
+
+
 def set_user_location(telegram_id, latitude, longitude) -> User:
     logger.info("setting user location for " + str(telegram_id) + " to " + str(latitude) + ", " + str(longitude))
 
