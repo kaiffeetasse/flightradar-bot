@@ -3,9 +3,7 @@ import os
 import logging
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.error import Unauthorized
-from telegram.ext import (
-    Updater,
-)
+from telegram.ext import Updater
 import db
 
 logging.basicConfig(
@@ -49,3 +47,24 @@ def get_track_button(aircraft_registration, untrack=False):
     ])
 
     return buttons
+
+
+def track_callback(update, context):
+    query = update.callback_query
+    query.answer()
+
+    if query.data.startswith("untrack"):
+        db.untrack_aircraft(query.from_user.id, query.data.split("_")[1])
+        tracking = False
+    else:
+        db.track_aircraft(query.from_user.id, query.data.split("_")[1])
+        tracking = True
+
+    # set button to (un)track
+    message = query.message
+    message.edit_reply_markup(get_track_button(query.data.split("_")[1], tracking))
+
+    updater.bot.send_message(
+        query.from_user.id,
+        "Tracking of " + query.data.split("_")[1] + " " + ("started" if tracking else "stopped")
+    )

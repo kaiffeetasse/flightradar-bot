@@ -3,8 +3,8 @@ from FlightRadar24.api import FlightRadar24API
 from dotenv import load_dotenv
 import logging
 import db
-import flightradar24_api
-import telegram_api
+from api import flightradar24_api
+from api import telegram_api
 from utils import map
 
 logging.basicConfig(
