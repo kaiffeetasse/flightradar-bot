@@ -43,11 +43,17 @@ def get_image_by_registration_number(registration_number):
 
     response = requests.request("GET", url)
 
-    res_json = response.json()
+    try:
+        res_json = response.json()
+        cdn_full_url = "https://cdn.jetphotos.com/full/" + res_json[0]["filename"]
+        return cdn_full_url
+    except IndexError:
+        logger.info("No image found for registration number: " + registration_number)
+    except Exception as e:
+        logger.error("Error while getting image by registration number: " + str(e))
+        logger.exception(e)
 
-    cdn_full_url = "https://cdn.jetphotos.com/full/" + res_json[0]["filename"]
-
-    return cdn_full_url
+    return None
 
 
 def __get_distance(lat1, lon1, lat2, lon2):
