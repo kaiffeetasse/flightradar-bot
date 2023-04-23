@@ -220,9 +220,13 @@ def check_tracked_flights_for_users_threaded():
                     image_url = flightradar24_api.get_image_by_registration_number(aircraft_registration)
 
                     send_message_to_user(user_id, msg, image_url, aircraft_registration, True)
+
+                    # update aircraft state
+                    aircraft_states[aircraft_registration] = aircraft
+
                     time.sleep(1)
 
-            aircraft_states = new_aircraft_states
+            # aircraft_states = new_aircraft_states
 
         except Exception as e:
             logger.error("Error while checking for tracked flights: " + str(e))
