@@ -232,6 +232,9 @@ def check_tracked_flights_for_users_threaded():
                     msg = msg + f"Aircraft: {aircraft_registration}\n"
                     msg = msg + f"Status: {status_msg}"
 
+                    if aircraft.callsign is not None and aircraft.id is not None:
+                        msg = msg + f"\nLink: https://www.flightradar24.com/{aircraft.callsign}/{aircraft.id}"
+
                     image_url = flightradar24_api.get_image_by_registration_number(aircraft_registration)
 
                     send_message_to_user(user_id, msg, image_url, aircraft_registration, True)
