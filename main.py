@@ -214,7 +214,7 @@ def check_tracked_flights_for_users_threaded():
                     status_msg = status_msg + " (" + most_nearby_airport['name'] + ")"
 
                     msg = "✈ Tracked flight Update ✈\n\n"
-                    msg = msg + f"Aircraft: {aircraft.registration}\n"
+                    msg = msg + f"Aircraft: {aircraft_registration}\n"
                     msg = msg + f"Status: {status_msg}"
 
                     image_url = flightradar24_api.get_image_by_registration_number(aircraft_registration)
