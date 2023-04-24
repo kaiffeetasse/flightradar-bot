@@ -33,7 +33,7 @@ def track(update, context):
             f"You are already tracking {aircraft_registration}.",
             None,
             aircraft_registration,
-            not tracking
+            tracking
         )
         return
     else:
