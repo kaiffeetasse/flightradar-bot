@@ -18,6 +18,24 @@ load_dotenv()
 fr_api = FlightRadar24API()
 
 
+def get_flights(y1, y2, x1, x2):
+    retries = 0
+
+    while True:
+        try:
+            return fr_api.get_flights(bounds=f"{y1},{y2},{x1},{x2}")
+        except Exception as e:
+            logger.error("Failed to get flights, retrying in 3 seconds")
+            retries += 1
+
+            if retries > 3:
+                logger.error("Failed to get flights after 3 retries")
+                logger.exception(e)
+                return None
+
+            time.sleep(3)
+
+
 def check_flights_for_users_threaded():
     user_flights = {}
     user_flight_ids = {}
@@ -43,7 +61,7 @@ def check_flights_for_users_threaded():
 
                 y1, y2, x1, x2 = map.get_y1_y2_x1_x2(latitude, longitude, user_radius)
 
-                new_user_flights = fr_api.get_flights(bounds=f"{y1},{y2},{x1},{x2}")
+                new_user_flights = get_flights(y1, y2, x1, x2)
                 new_user_flight_ids = [flight.id for flight in new_user_flights]
 
                 for flight in new_user_flights:
