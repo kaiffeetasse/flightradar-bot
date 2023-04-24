@@ -25,7 +25,7 @@ def track(update, context):
         update.message.reply_text("Invalid aircraft registration. Please try again.")
         return
 
-    tracking = not db.is_user_tracking(user_id, aircraft_registration)
+    tracking = db.is_user_tracking(user_id, aircraft_registration)
 
     if tracking:
         telegram_api.send_message_to_user(
@@ -33,7 +33,7 @@ def track(update, context):
             f"You are already tracking {aircraft_registration}.",
             None,
             aircraft_registration,
-            tracking
+            not tracking
         )
         return
     else:
@@ -52,12 +52,11 @@ def track(update, context):
                         f"Tracking of {aircraft_registration} started.",
                         image_url,
                         aircraft_registration,
-                        tracking
+                        not tracking
                     )
                     return
                 except Exception as e:
-                    logger.error("could not send message to user " + str(user_id))
-                    logger.exception(e)
+                    logger.error("Error while sending message to user: " + str(e))
 
         else:
             telegram_api.send_message_to_user(
@@ -65,5 +64,5 @@ def track(update, context):
                 f"Tracking of {aircraft_registration} started.",
                 None,
                 aircraft_registration,
-                tracking
+                not tracking
             )

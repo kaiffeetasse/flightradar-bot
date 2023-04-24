@@ -100,7 +100,6 @@ def check_flights_for_users_threaded():
                                 telegram_api.send_message_to_user(user_id, msg, None, registration, tracking)
                             except Exception as e:
                                 logger.error("Error while sending message to user: " + str(e))
-                                logger.exception(e)
 
                         time.sleep(1)
 

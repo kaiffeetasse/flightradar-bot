@@ -107,8 +107,7 @@ def check_tracked_flights_for_users_threaded():
                             telegram_api.send_message_to_user(user_id, msg, image_url, aircraft_registration, True)
                             return
                         except Exception as e:
-                            logger.error("could not send message to user " + str(user_id))
-                            logger.exception(e)
+                            logger.error("Error while sending message to user: " + str(e))
 
                     # update aircraft state
                     aircraft_states[aircraft_registration] = aircraft
