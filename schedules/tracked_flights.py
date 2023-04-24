@@ -82,7 +82,7 @@ def check_tracked_flights_for_users_threaded():
                         continue
 
                     # skip aircrafts on ground
-                    if aircraft is not None and aircraft.ground_speed > 30:
+                    if aircraft is not None and aircraft.ground_speed < 30:
                         continue
 
                     status_msg = status_msg + " (" + most_nearby_airport['name'] + ")"
