@@ -1,3 +1,5 @@
+import time
+
 import db
 import logging
 
@@ -66,6 +68,7 @@ def track(update, context):
                             aircraft_registration,
                             not tracking
                         )
+                        time.sleep(1)
                         break
                     except Exception as e:
                         logger.error("Error while sending message to user: " + str(e))
