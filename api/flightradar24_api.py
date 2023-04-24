@@ -97,8 +97,28 @@ def get_airport_by_lat_long(latitude, longitude):
     return most_nearby_airport, most_nearby_airport_distance_km
 
 
+def search_by_query(query):
+    import requests
+
+    url = "https://www.flightradar24.com/v1/search/web/find?query=" + query + "&limit=100"
+
+    response = requests.request("GET", url)
+
+    res_json = response.json()
+
+    aircrafts = []
+    for result in res_json['results']:
+        if result['type'] == 'aircraft':
+            aircrafts.append(result)
+
+    return aircrafts
+
+
 if __name__ == '__main__':
     # get_image_by_registration_number("HB-ZRQ")
-    airport, distance = get_airport_by_lat_long(48.406355, 7.949271)
-    print("nearby: " + str(airport))
-    print("distance: " + str(distance) + "km")
+    # airport, distance = get_airport_by_lat_long(48.406355, 7.949271)
+    # print("nearby: " + str(airport))
+    # print("distance: " + str(distance) + "km")
+
+    aircrafts = search_by_query("HB-ZRQ")
+    print(aircrafts)
