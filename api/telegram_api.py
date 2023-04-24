@@ -32,9 +32,6 @@ def send_message_to_user(user_id, message, image_src, registration, tracking):
         logger.error("could not send message to user " + str(user_id) + " (user has blocked the bot)")
         db.remove_user(user_id)
         db.remove_all_tracked_aiplanes(user_id)
-    except Exception as e:
-        logger.error("could not send message to user " + str(user_id))
-        logger.exception(e)
 
 
 def get_track_button(aircraft_registration, untrack=False):

@@ -3,7 +3,7 @@ from FlightRadar24.api import FlightRadar24API
 from dotenv import load_dotenv
 import logging
 import db
-from api import flightradar24_api
+from api import flightradar24_api, planepictures_api
 from api import telegram_api
 
 logging.basicConfig(
@@ -95,9 +95,20 @@ def check_tracked_flights_for_users_threaded():
                         if aircraft.callsign is not None and aircraft.id is not None:
                             msg = msg + f"\nLink: https://www.flightradar24.com/{aircraft.callsign}/{aircraft.id}"
 
-                    image_url = flightradar24_api.get_image_by_registration_number(aircraft_registration)
+                    image_urls = [flightradar24_api.get_image_by_registration_number(aircraft_registration)]
 
-                    telegram_api.send_message_to_user(user_id, msg, image_url, aircraft_registration, True)
+                    if image_urls[0] is None:
+                        image_urls = planepictures_api.get_image_by_registration_number(aircraft_registration)
+
+                    image_urls.append(None)
+
+                    for image_url in image_urls:
+                        try:
+                            telegram_api.send_message_to_user(user_id, msg, image_url, aircraft_registration, True)
+                            return
+                        except Exception as e:
+                            logger.error("could not send message to user " + str(user_id))
+                            logger.exception(e)
 
                     # update aircraft state
                     aircraft_states[aircraft_registration] = aircraft

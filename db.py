@@ -193,6 +193,22 @@ def get_tracked_aircraft_registrations_by_telegram_id(telegram_id):
     return result
 
 
+def is_user_tracking(telegram_id, registration):
+    mydb = get_db()
+    mycursor = mydb.cursor(dictionary=True, buffered=True)
+
+    sql = "SELECT * FROM tracking WHERE user_telegram_id = %s AND aircraft_registration = %s"
+    val = (telegram_id, registration)
+    mycursor.execute(sql, val)
+
+    result = mycursor.fetchone()
+
+    if result is None:
+        return False
+
+    return True
+
+
 def track_aircraft(telegram_id, registration):
     logger.info("tracking aircraft for " + str(telegram_id) + " with registration " + str(registration))
 

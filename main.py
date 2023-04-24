@@ -7,7 +7,7 @@ from telegram.ext import (
 )
 from api import telegram_api
 from commands import (
-    altitude, altmax, altmin, location, radius, start, stop
+    altitude, altmax, altmin, location, radius, start, stop, track
 )
 from schedules import tracked_flights, location_flights
 
@@ -39,6 +39,7 @@ if __name__ == '__main__':
     dispatcher.add_handler(CommandHandler("altitude", altitude.altitude))
     dispatcher.add_handler(CommandHandler("altmin", altmin.altmin))
     dispatcher.add_handler(CommandHandler("altmax", altmax.altmax))
+    dispatcher.add_handler(CommandHandler("track", track.track))
 
     dispatcher.add_handler(CallbackQueryHandler(telegram_api.track_callback))
 

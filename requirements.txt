@@ -4,3 +4,4 @@ FlightRadarAPI~=1.2.7
 mysql-connector-python~=8.0.31
 requests~=2.28.2
 Pillow~=9.5.0
+beautifulsoup4~=4.12.2
