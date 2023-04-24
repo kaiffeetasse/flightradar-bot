@@ -92,7 +92,16 @@ def check_flights_for_users_threaded():
 
                         tracking = db.is_aircraft_tracked(user_id, registration)
 
-                        telegram_api.send_message_to_user(user_id, msg, image_src, registration, tracking)
+                        try:
+                            telegram_api.send_message_to_user(user_id, msg, image_src, registration, tracking)
+                        except:
+                            # try without image
+                            try:
+                                telegram_api.send_message_to_user(user_id, msg, None, registration, tracking)
+                            except Exception as e:
+                                logger.error("Error while sending message to user: " + str(e))
+                                logger.exception(e)
+
                         time.sleep(1)
 
                         if user_flight_ids.get(user_id) is None:
