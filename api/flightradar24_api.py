@@ -25,7 +25,7 @@ def get_flight_infos(flight_id):
 def get_image_by_flight_id(flight_id):
     flight_infos = get_flight_infos(flight_id)
 
-    if flight_infos is None:
+    if flight_infos is None or "aircraft" not in flight_infos:
         return None
 
     if "images" in flight_infos["aircraft"] and flight_infos["aircraft"]["images"] is not None:
