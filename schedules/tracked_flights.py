@@ -106,7 +106,8 @@ def check_tracked_flights_for_users_threaded():
                     for image_url in image_urls:
                         try:
                             telegram_api.send_message_to_user(user_id, msg, image_url, aircraft_registration, True)
-                            return
+                            logger.debug("Tracking message sent to user: " + str(user_id))
+                            break
                         except Exception as e:
                             logger.error("Error while sending message to user: " + str(e))
 
