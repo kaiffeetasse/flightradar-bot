@@ -16,6 +16,9 @@ load_dotenv()
 
 fr_api = FlightRadar24API()
 
+# set log level to DEBUG
+logger.setLevel(logging.DEBUG)
+
 
 def get_aircraft_states_for_all_users():
     logger.debug("Checking tracked flights for users...")
@@ -56,11 +59,13 @@ def check_tracked_flights_for_users_threaded():
 
                     aircraft_registration = aircraft["aircraft_registration"]
 
-                    new_flight_status = new_aircraft_states.get(aircraft_registration) is None
                     flight_status = aircraft_states.get(aircraft_registration) is None
+                    new_flight_status = new_aircraft_states.get(aircraft_registration) is None
 
                     if new_flight_status == flight_status:
                         continue
+
+                    logger.debug("Flight status changed")
 
                     aircraft = new_aircraft_states.get(aircraft_registration)
 
@@ -75,33 +80,42 @@ def check_tracked_flights_for_users_threaded():
                         latitude = aircraft.latitude
                         longitude = aircraft.longitude
 
+                    logger.debug("new status_msg: " + status_msg)
+
                     most_nearby_airport, most_nearby_airport_distance_km = flightradar24_api \
                         .get_airport_by_lat_long(latitude, longitude)
 
                     # probably a faulty status update
                     if most_nearby_airport_distance_km > 3:
+                        logger.debug("Most nearby airport is too far away, skippin")
+                        logger.debug("most_nearby_airport: " + str(most_nearby_airport))
+                        logger.debug("most_nearby_airport_distance_km: " + str(most_nearby_airport_distance_km))
                         continue
 
                     # skip aircrafts on ground
                     if aircraft is not None and aircraft.ground_speed < 30:
+                        logger.debug("Aircraft is on ground, skipping")
                         continue
 
+                    # build message
                     status_msg = status_msg + " (" + most_nearby_airport['name'] + ")"
 
                     msg = "✈ Tracked flight Update ✈\n\n"
                     msg = msg + f"Aircraft: {aircraft_registration}\n"
                     msg = msg + f"Status: {status_msg}"
 
+                    # add url if available
                     if aircraft is not None:
                         if aircraft.callsign is not None and aircraft.id is not None:
                             msg = msg + f"\nLink: https://www.flightradar24.com/{aircraft.callsign}/{aircraft.id}"
 
+                    # search for image
                     image_urls = [flightradar24_api.get_image_by_registration_number(aircraft_registration)]
 
                     if image_urls[0] is None:
                         image_urls = planepictures_api.get_image_by_registration_number(aircraft_registration)
 
-                    image_urls.append(None)
+                    image_urls.append(None)  # ensure that the loop will be executed at least once (msg without image)
 
                     for image_url in image_urls:
                         try:
