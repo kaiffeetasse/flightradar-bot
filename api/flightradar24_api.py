@@ -1,5 +1,4 @@
 import sys
-
 import requests
 import logging
 
@@ -98,9 +97,9 @@ def get_airport_by_lat_long(latitude, longitude):
 
 
 def search_by_query(query):
-    import requests
+    logger.info("Searching for query: " + query)
 
-    url = "https://www.flightradar24.com/v1/search/web/find?query=" + query + "&limit=100"
+    url = "https://www.flightradar24.com/v1/search/web/find?query=" + query + "&limit=100&type=aircraft"
 
     response = requests.request("GET", url)
 
@@ -108,8 +107,9 @@ def search_by_query(query):
 
     aircrafts = []
     for result in res_json['results']:
-        if result['type'] == 'aircraft':
-            aircrafts.append(result)
+        aircrafts.append(result)
+
+    logger.info("Found " + str(len(aircrafts)) + " aircrafts")
 
     return aircrafts
 
