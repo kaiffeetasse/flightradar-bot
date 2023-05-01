@@ -130,7 +130,7 @@ def check_tracked_flights_for_users_threaded():
 
                     time.sleep(1)
 
-            # aircraft_states = new_aircraft_states
+            aircraft_states = new_aircraft_states  # TODO remove?
 
         except Exception as e:
             logger.error("Error while checking for tracked flights: " + str(e))
