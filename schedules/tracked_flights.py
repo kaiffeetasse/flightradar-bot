@@ -65,7 +65,7 @@ def check_tracked_flights_for_users_threaded():
                     if new_flight_status == flight_status:
                         continue
 
-                    logger.debug("Flight status changed")
+                    logger.debug("Flight status of " + aircraft_registration + " changed")
 
                     aircraft = new_aircraft_states.get(aircraft_registration)
 
@@ -87,7 +87,7 @@ def check_tracked_flights_for_users_threaded():
 
                     # probably a faulty status update
                     if most_nearby_airport_distance_km > 3:
-                        logger.debug("Most nearby airport is too far away, skippin")
+                        logger.debug("Most nearby airport is too far away, skipping")
                         logger.debug("most_nearby_airport: " + str(most_nearby_airport))
                         logger.debug("most_nearby_airport_distance_km: " + str(most_nearby_airport_distance_km))
                         continue
@@ -125,7 +125,7 @@ def check_tracked_flights_for_users_threaded():
                         except Exception as e:
                             logger.error("Error while sending message to user: " + str(e))
 
-                    # update aircraft state
+                    # update aircraft state only if message was sent
                     aircraft_states[aircraft_registration] = aircraft
 
                     time.sleep(1)
