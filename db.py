@@ -3,7 +3,7 @@ import time
 import mysql.connector
 import logging
 from dotenv import load_dotenv
-from user import User
+from entity.user import User
 
 load_dotenv()
 
