@@ -265,6 +265,18 @@ def is_aircraft_tracked(user_id, registration):
     return True
 
 
+def get_all_tracked_aircrafts():
+    mydb = get_db()
+    mycursor = mydb.cursor(dictionary=True, buffered=True)
+
+    sql = "select distinct aircraft_registration from tracking"
+    mycursor.execute(sql)
+
+    result = mycursor.fetchall()
+
+    return result
+
+
 if __name__ == '__main__':
     # set_user_location(123, 1.23456789, 9.87654321)
 
