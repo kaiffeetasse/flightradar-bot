@@ -33,7 +33,7 @@ def get_flights(y1, y2, x1, x2):
                 logger.exception(e)
                 return None
 
-            time.sleep(3)
+        time.sleep(5)
 
 
 def check_flights_for_users_threaded():
