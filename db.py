@@ -37,11 +37,11 @@ def get_db():
                 database=DB_DATABASE
             )
 
-            logger.debug("connection successfull!")
+            logger.debug("connection successful!")
             return mydb
         except Exception as e:
-            logger.exception(e)
             logger.error("could not connect to db! trying again in " + str(retry_seconds) + " seconds")
+            logger.exception(e)
             retry_counter = retry_counter + 1
             time.sleep(retry_seconds)
 
