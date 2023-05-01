@@ -49,10 +49,10 @@ file.
 * `/start` - Start the bot
 * `/stop` - Stop the bot
 * `/radius` - Set the radius of interest in kilometers
-* `altitude` - Set the altitude bounds for aircraft detection
-* `altmin` - Set the min altitude for aircraft detection
-* `altmax` - Set the max altitude for aircraft detection
-* `track` - Track aircraft by aircraft registration
+* `/altitude` - Set the altitude bounds for aircraft detection
+* `/altmin` - Set the min altitude for aircraft detection
+* `/altmax` - Set the max altitude for aircraft detection
+* `/track` - Track aircraft by aircraft registration
 
 ## Credits
 
