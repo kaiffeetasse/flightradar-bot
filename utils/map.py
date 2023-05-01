@@ -1,6 +1,5 @@
 import math
-
-from staticmap import StaticMap, CircleMarker
+from utils.staticmap import StaticMap, CircleMarker
 
 
 def get_y1_y2_x1_x2(latitude, longitude, radius_km):
