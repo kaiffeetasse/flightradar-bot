@@ -18,23 +18,24 @@ fr_api = FlightRadar24API()
 
 
 def get_aircraft_states_for_all_users():
-    aircraft_status = {}
+    logger.debug("Checking tracked flights for users...")
+    aircraft_states = {}
 
-    for user in db.get_users():
-        user_id = user.telegram_id
-        tracked_aircrafts = db.get_tracked_aircraft_registrations_by_telegram_id(user_id)
+    tracked_aircrafts = db.get_all_tracked_aircrafts()
 
-        for aircraft in tracked_aircrafts:
+    for aircraft in tracked_aircrafts:
 
-            flights = fr_api.get_flights(registration=aircraft["aircraft_registration"])
+        flights = fr_api.get_flights(registration=aircraft["aircraft_registration"])
 
-            if flights is None or len(flights) == 0:
-                aircraft_status[aircraft["aircraft_registration"]] = None
-                continue
-            else:
-                aircraft_status[aircraft["aircraft_registration"]] = flights[0]
+        if flights is None or len(flights) == 0:
+            aircraft_states[aircraft["aircraft_registration"]] = None
+        else:
+            aircraft_states[aircraft["aircraft_registration"]] = flights[0]
+            break
 
-    return aircraft_status
+    logger.debug("Aircraft states loaded")
+
+    return aircraft_states
 
 
 def check_tracked_flights_for_users_threaded():
